@@ -15,6 +15,23 @@ App web del documento técnico de **"Ver implementación"**. Desde la extensión
 
 Se usa hash (`#/`) porque GitHub Pages no reescribe rutas: con historial normal, recargar un link profundo daría 404.
 
+## El documento
+
+`/#/implementacion/:id` muestra la explicación en secciones desplegables:
+
+| Sección | Qué trae |
+|---|---|
+| Qué se incumplía | Principio y hallazgo, la evidencia del detector con su umbral y por qué se rompe. |
+| Por qué esta solución | El problema en esa clase y la solución elegida. |
+| Alternativas descartadas | Cada una con el motivo. |
+| Riesgos al aplicarla | Lo que hay que cuidar. |
+| Antes y después | Métodos, atributos y complejidad ciclomática antes y después, y el código lado a lado con resaltado Java (en el celular, uno debajo del otro). |
+
+- **Apertura:** arranca con la primera sección abierta. "Expandir todo" y "Contraer todo" están en la barra, junto al estado del QA (verificada o no).
+- **Imprimir o PDF:** el botón abre el diálogo de impresión del navegador, y desde ahí se guarda como PDF. Al imprimir se despliegan todas las secciones, se ocultan la barra y la navegación, y el código se parte en líneas en vez de cortarse.
+- **Sin narrativa de la IA:** las secciones que dependen de ella lo avisan, y la evidencia, las métricas y el código se muestran igual.
+- **Documentos anteriores:** si un documento no trae código o complejidad, esas partes no aparecen.
+
 ## Correr en local
 
 ```bash

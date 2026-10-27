@@ -33,9 +33,10 @@ describe('DocumentPage', () => {
 
   it('sin la narrativa de la IA muestra igual la evidencia y avisa', async () => {
     renderPage('ejemplo-sin-ia', instantSamples);
-    expect(await screen.findByText(/La explicación de la IA no está disponible/)).toBeInTheDocument();
-    expect(screen.getByText('19 métodos y 1 atributos (umbral 15/10)')).toBeInTheDocument();
+    expect(await screen.findByText('19 métodos y 1 atributos (umbral 15/10)')).toBeInTheDocument();
+    expect(screen.getAllByText(/La IA no escribió esta parte/)).toHaveLength(3);
     expect(screen.queryByRole('heading', { name: 'La solución elegida' })).not.toBeInTheDocument();
+    expect(screen.getByRole('row', { name: /Complejidad ciclomática 28 17 -11/ })).toBeInTheDocument();
   });
 
   it('muestra la carga mientras llega el documento', () => {
