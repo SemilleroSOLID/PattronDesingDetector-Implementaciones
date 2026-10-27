@@ -34,6 +34,21 @@ export interface ExplanationNarrative {
   risks: string[];
 }
 
+/** Un bloque de código Java con su título (el nombre de la clase). */
+export interface CodeBlock {
+  title: string;
+  code: string;
+}
+
+/**
+ * Código antes y después: `before` son solo los métodos que se mueven (nunca el archivo completo);
+ * `after`, cada clase extraída. Una sugerencia de fragmento trae solo `after`.
+ */
+export interface ExplanationCode {
+  before: CodeBlock[];
+  after: CodeBlock[];
+}
+
 export interface RefactorExplanation {
   className: string;
   antipattern: string;
@@ -42,6 +57,12 @@ export interface RefactorExplanation {
   evidence: ExplanationEvidence;
   metricsBefore: ClassMetrics | null;
   metricsAfter: ClassMetrics | null;
+  /** Complejidad ciclomática total antes/después (opcional: documentos anteriores no la traen). */
+  complexityBefore?: number | null;
+  complexityAfter?: number | null;
+  code?: ExplanationCode | null;
+  /** Si la sugerencia pasó el QA; null o ausente en documentos anteriores. */
+  verificationStatus?: 'verified' | 'unverified' | null;
   /** null si la IA no pudo escribir la narrativa: la parte determinista llega igual. */
   narrative: ExplanationNarrative | null;
 }

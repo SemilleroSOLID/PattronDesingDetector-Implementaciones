@@ -1,8 +1,9 @@
 /**
  * Documentos de ejemplo, para cuando no hay backend configurado.
  *
- * La parte determinista de `ejemplo` (evidencia y métricas) es la respuesta
- * real de `POST /analyze/explain` para `JsonObject` de Gson. La narrativa está
+ * La parte determinista de `ejemplo` (evidencia, métricas, complejidad y
+ * código antes/después) es la respuesta real de `POST /analyze/explain` para
+ * `JsonObject` de Gson. La narrativa está
  * escrita a mano para mostrar el formato: la página lo avisa con
  * `SAMPLE_NOTICE`. Los otros ids muestran cada estado de la página sin
  * backend: `ejemplo-sin-ia` (la IA no escribió la narrativa),
@@ -12,7 +13,7 @@
 import type { ExplanationResult, PublishedExplanation, RefactorExplanation } from './types';
 
 export const SAMPLE_NOTICE =
-  'Documento de ejemplo: la evidencia y las métricas son las reales de JsonObject (Gson); la narrativa está escrita a mano para mostrar el formato.';
+  'Documento de ejemplo: la evidencia, las métricas y el código son los reales de JsonObject (Gson); la narrativa está escrita a mano para mostrar el formato.';
 
 const jsonObject: RefactorExplanation = {
   className: 'JsonObject',
@@ -25,6 +26,18 @@ const jsonObject: RefactorExplanation = {
   },
   metricsBefore: { methodCount: 19, attributeCount: 1 },
   metricsAfter: { methodCount: 12, attributeCount: 1 },
+  complexityBefore: 28,
+  complexityAfter: 17,
+  verificationStatus: "unverified",
+  code: {
+    before: [
+      { title: "JsonObject", code: "public class JsonObject {\n    // … lo que se queda en la clase …\n\n    public void addProperty(String property, String value) {\n      add(property, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));\n    }\n\n    public void addProperty(String property, Number value) {\n      add(property, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));\n    }\n\n    public void addProperty(String property, Boolean value) {\n      add(property, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));\n    }\n\n    public void addProperty(String property, Character value) {\n      add(property, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));\n    }\n\n    public JsonPrimitive getAsJsonPrimitive(String memberName) {\n      return (JsonPrimitive) members.get(memberName);\n    }\n\n    public JsonArray getAsJsonArray(String memberName) {\n      return (JsonArray) members.get(memberName);\n    }\n\n    public JsonObject getAsJsonObject(String memberName) {\n      return (JsonObject) members.get(memberName);\n    }\n}" },
+    ],
+    after: [
+      { title: "JsonObjectTypedAccess", code: "public class JsonObjectTypedAccess {\n    // Acceso tipado a los miembros\n\n    public JsonPrimitive getAsJsonPrimitive(String memberName) {\n      return (JsonPrimitive) members.get(memberName);\n    }\n\n    public JsonArray getAsJsonArray(String memberName) {\n      return (JsonArray) members.get(memberName);\n    }\n\n    public JsonObject getAsJsonObject(String memberName) {\n      return (JsonObject) members.get(memberName);\n    }\n}" },
+      { title: "JsonObjectPropertyWriter", code: "public class JsonObjectPropertyWriter {\n    // Alta de propiedades primitivas\n\n    public void addProperty(String property, String value) {\n      add(property, value == null ? JsonNull.INSTANCE : new JsonPrimitive(value));\n    }\n}" },
+    ],
+  },
   narrative: {
     whyItBreaks:
       'JsonObject declara 19 métodos contra un umbral de 15: además de guardar los miembros, convierte cada valor primitivo (las cuatro sobrecargas de addProperty) y ofrece accesos tipados (getAsJsonPrimitive, getAsJsonArray, getAsJsonObject).',

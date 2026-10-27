@@ -124,16 +124,6 @@ code {
   letter-spacing: 0.04em;
 }
 
-.document section {
-  margin-top: 28px;
-}
-
-.document h2 {
-  font-size: 1.15rem;
-  margin: 0 0 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-}
 
 .evidence {
   font-weight: 600;
@@ -253,5 +243,242 @@ code {
   .home,
   .status {
     padding: 20px 16px;
+  }
+}
+
+/* ── Documento en secciones desplegables (#387) ─────────────────────────── */
+
+.document__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.document__header .eyebrow,
+.document__header h1 {
+  flex-basis: 100%;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.button--ghost {
+  background: transparent;
+  color: var(--accent);
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge--ok {
+  color: var(--good);
+  border: 1px solid var(--good);
+}
+
+.badge--warn {
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.section {
+  border-top: 1px solid var(--border);
+}
+
+.section summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+}
+
+.section summary::-webkit-details-marker {
+  display: none;
+}
+
+.section summary::before {
+  content: '▸';
+  color: var(--accent);
+  transition: transform 0.15s;
+}
+
+.section[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.section summary h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.section summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.section__body {
+  padding: 0 0 18px 22px;
+}
+
+.section__body h3 {
+  font-size: 1rem;
+  margin: 16px 0 4px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.comparison--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.comparison__column h3 {
+  margin: 0 0 8px;
+}
+
+.code-block {
+  margin: 0 0 12px;
+}
+
+.code-block figcaption {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.code {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--code-bg);
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.code code {
+  background: none;
+  padding: 0;
+  font-family: 'Cascadia Code', Consolas, monospace;
+}
+
+/* Tema del resaltado (highlight.js), claro y oscuro con las mismas variables. */
+.hljs-keyword,
+.hljs-built_in { color: #cf222e; }
+.hljs-type,
+.hljs-title.class_ { color: #953800; }
+.hljs-title.function_ { color: #8250df; }
+.hljs-string { color: #0a3069; }
+.hljs-number,
+.hljs-literal { color: #0550ae; }
+.hljs-comment { color: var(--muted); font-style: italic; }
+.hljs-meta { color: #116329; }
+
+@media (prefers-color-scheme: dark) {
+  .hljs-keyword,
+  .hljs-built_in { color: #ff7b72; }
+  .hljs-type,
+  .hljs-title.class_ { color: #ffa657; }
+  .hljs-title.function_ { color: #d2a8ff; }
+  .hljs-string { color: #a5d6ff; }
+  .hljs-number,
+  .hljs-literal { color: #79c0ff; }
+  .hljs-meta { color: #7ee787; }
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+@media (max-width: 760px) {
+  .comparison {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .section__body {
+    padding-left: 0;
+  }
+
+  .metrics th,
+  .metrics td {
+    padding: 6px 8px;
+  }
+
+  .toolbar {
+    margin-left: 0;
+  }
+}
+
+/* ── Impresión y PDF: todo desplegado, sin barra ni navegación ─────────── */
+
+@media print {
+  :root {
+    --bg: #fff;
+    --surface: #fff;
+    --text: #000;
+    --muted: #444;
+    --border: #bbb;
+    --code-bg: #f6f8fa;
+    color-scheme: light;
+  }
+
+  .topbar,
+  .footer,
+  .toolbar {
+    display: none;
+  }
+
+  main {
+    max-width: none;
+    padding: 0;
+  }
+
+  .document {
+    border: none;
+    padding: 0;
+  }
+
+  .section summary::before {
+    content: none;
+  }
+
+  .section__body {
+    padding-left: 0;
+  }
+
+  .code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    overflow: visible;
+  }
+
+  .code-block,
+  .metrics,
+  .details div {
+    break-inside: avoid;
+  }
+
+  .section summary h2 {
+    break-after: avoid;
   }
 }
