@@ -56,8 +56,11 @@ export function StatusView({ state, onRetry }: Props) {
       );
     case 'not_found':
       return (
-        <Panel tone="warning" title="No encontramos este documento">
-          <p>El link no corresponde a ninguna explicación publicada. Revisa que esté completo.</p>
+        <Panel tone="warning" title="Este documento no existe o ya venció">
+          <p>
+            El link no corresponde a ninguna explicación vigente: puede haber vencido (duran 30 días) o estar incompleto.
+            Vuelve a generarla desde la extensión con «Ver implementación».
+          </p>
         </Panel>
       );
     case 'sleeping':

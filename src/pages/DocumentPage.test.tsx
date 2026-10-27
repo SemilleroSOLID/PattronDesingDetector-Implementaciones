@@ -58,7 +58,7 @@ describe('DocumentPage', () => {
     expect(screen.getByText(/Estuvo disponible hasta el 1 de octubre de 2026/)).toBeInTheDocument();
     unmount();
     renderPage('no-existe', instantSamples);
-    expect(await screen.findByRole('heading', { name: 'No encontramos este documento' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Este documento no existe o ya venció' })).toBeInTheDocument();
   });
 
   it('backend dormido: ofrece reintentar y reintenta', async () => {

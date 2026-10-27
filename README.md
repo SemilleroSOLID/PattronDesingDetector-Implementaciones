@@ -44,16 +44,16 @@ Mientras el endpoint del backend no exista, la app funciona con documentos de ej
 | `ejemplo-dormido` | El backend no despierta a tiempo. |
 | cualquier otro | Documento inexistente. |
 
-## Contrato esperado de `GET /explanations/:id`
+## Contrato de `GET /explanations/:id`
 
-Lo implementa el backend en "Publicar la explicación". La app espera esto:
+Lo sirve el backend (`pattern-design-detector-backend`, `docs/openapi.yaml`). Es público y de solo lectura: no lleva API key. El documento se publica antes con `POST /explanations`, que sí la lleva, desde la extensión.
 
 | Respuesta | Significado en la app |
 |---|---|
 | `200` + `PublishedExplanation` | El documento. Si `expiresAt` ya pasó, se muestra como vencido. |
-| `404` | Documento inexistente. |
-| `410` | Documento vencido. |
-| `502` / `503` / `504` o conexión caída | El backend está despertando (cold start de Render free). La app reintenta con esperas crecientes durante 90 s y avisa que puede tardar. Si no despierta, muestra "backend dormido" con un botón para reintentar. |
+| `404` | El documento no existe **o ya venció**. El backend responde lo mismo a propósito, para que el link no revele si un documento existió; la página muestra "no existe o ya venció". |
+| `410` | Vencido (la app lo entiende, aunque el backend hoy usa 404). |
+| `502` / `503` / `504` o conexión caída | El backend está despertando (cold start de Render free) o su storage no responde. La app reintenta con esperas crecientes durante 90 s y avisa que puede tardar. Si no despierta, muestra "backend dormido" con un botón para reintentar. |
 | otro código | Error, con un botón para reintentar. |
 
 ```ts
