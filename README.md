@@ -6,6 +6,16 @@ App web del documento técnico de **"Ver implementación"**. Desde la extensión
 - **App publicada:** `https://semillerosolid.github.io/PattronDesingDetector-Implementaciones/`
 - **Documento de ejemplo:** `https://semillerosolid.github.io/PattronDesingDetector-Implementaciones/#/implementacion/ejemplo`
 
+## Cómo llega un documento hasta acá
+
+1. En la extensión, el usuario usa **Ver implementación**, desde la barra del diff o desde la fila del panel Resumen.
+2. La primera vez, la extensión pide permiso para publicar (ajuste `prueba.publishExplanations`). Sin permiso no se envía nada.
+3. La extensión pide la explicación (`POST /analyze/explain`) y la publica (`POST /explanations`). Las dos llamadas llevan la API key.
+4. El backend guarda el documento por 30 días y devuelve el link: `EXPLANATION_PAGE_URL` con el id, por ejemplo `…/#/implementacion/dHeSW2FyUVZVe3qhcuwCAA`.
+5. La extensión abre el link en el navegador. Esta app lee el documento con `GET /explanations/:id`, que es público y no lleva API key.
+
+Qué datos se publican, quién los puede ver, cuánto duran y cómo se borran está decidido en el [ADR 0002 del backend](https://github.com/SemilleroSOLID/pattern-design-detector-backend/blob/develop/docs/adr/0002-ver-implementacion-publicacion.md). Resumen: solo la explicación (los métodos que se mueven y el código sugerido, nunca el archivo completo), visible para quien tenga el link, y se borra sola al vencer.
+
 ## Rutas
 
 | Ruta | Qué muestra |
@@ -51,7 +61,7 @@ Variables (ver `.env.example`):
 
 ## Documentos de ejemplo
 
-Mientras el endpoint del backend no exista, la app funciona con documentos de ejemplo. Hay uno por cada estado de la página:
+Sin backend configurado (`VITE_API_BASE_URL` vacía), la app funciona con documentos de ejemplo. Sirven para trabajar en la página sin levantar el backend. Hay uno por cada estado de la página:
 
 | id | Estado |
 |---|---|
@@ -86,6 +96,56 @@ Los tipos están en `src/api/types.ts`. `RefactorExplanation` replica el esquema
 
 La página pide el documento desde el navegador, así que el backend tiene que permitir el origen `https://semillerosolid.github.io` en `CORS_ALLOWED_ORIGINS`. El endpoint es de solo lectura y no lleva API key: el id del link es lo que da acceso.
 
+## Apuntar al backend
+
+La app solo lee: nunca publica. Para ver un documento real hay que publicarlo antes en el backend.
+
+### En local, de punta a punta
+
+1. **Backend** (`pattern-design-detector-backend`), con el origen de la app permitido y el link apuntando a la app local. Con PowerShell:
+
+   ```powershell
+   $env:CORS_ALLOWED_ORIGINS='["http://localhost:5173"]'
+   $env:EXPLANATION_PAGE_URL='http://localhost:5173/PattronDesingDetector-Implementaciones/#/implementacion/{id}'
+   uvicorn app.main:app --port 8000
+   ```
+
+   Sin `CORS_ALLOWED_ORIGINS`, el navegador bloquea la lectura. La app la ve como una conexión caída: reintenta durante 90 s y termina en "backend dormido".
+
+2. **App**, apuntando a ese backend:
+
+   ```bash
+   VITE_API_BASE_URL=http://localhost:8000 npm run dev            # bash
+   $env:VITE_API_BASE_URL='http://localhost:8000'; npm run dev    # PowerShell
+   ```
+
+   (o `VITE_API_BASE_URL=http://localhost:8000` en un `.env.local`).
+
+3. **Publicar un documento**, de una de estas dos formas:
+   - con la extensión, usando **Ver implementación** con `prueba.backendUrl` en `http://localhost:8000`;
+   - a mano, con una explicación de `POST /analyze/explain`:
+
+   ```bash
+   # explicacion.json = {"explanation": { ... }}
+   curl -X POST http://localhost:8000/explanations -H "Content-Type: application/json" --data-binary @explicacion.json
+   ```
+
+   La respuesta trae `url`: abrirla en el navegador.
+
+### En producción
+
+La app publicada lee el backend de la variable de repo `API_BASE_URL`, que se toma al compilar (ver "Deploy"). Para que muestre documentos reales tienen que cumplirse tres cosas:
+
+- **La variable:** `API_BASE_URL` con la URL del backend de Render.
+- **CORS:** el backend de Render permite el origen `https://semillerosolid.github.io` en `CORS_ALLOWED_ORIGINS`. Ya está en el `render.yaml` del backend; si el servicio no sigue el Blueprint, hay que cargarla a mano en el dashboard.
+- **El backend desplegado** incluye `POST /explanations` y `GET /explanations/{id}`.
+
+Si falta alguna, la app publicada no muestra documentos reales:
+
+- **Sin la variable:** sigue en modo ejemplo.
+- **Sin CORS:** cada lectura termina en "backend dormido".
+- **Sin el endpoint:** los links dan "no existe o ya venció".
+
 ## Deploy
 
 - **CI** (`.github/workflows/ci.yml`): en cada PR, y en cada push a `main`, corre `typecheck`, tests y build.
@@ -95,4 +155,6 @@ Configuración, una sola vez:
 
 1. El repo tiene que ser **público**: la organización está en el plan gratuito y ahí Pages solo funciona en repos públicos.
 2. Settings → Pages → Source: **GitHub Actions**.
-3. Opcional: Settings → Secrets and variables → Actions → Variables → `API_BASE_URL` con la URL del backend (por ejemplo `https://pattern-design-detector-backend.onrender.com`). Sin esa variable, la app publicada usa los documentos de ejemplo.
+3. Settings → Secrets and variables → Actions → Variables → `API_BASE_URL` con la URL del backend (por ejemplo `https://pattern-design-detector-backend.onrender.com`). Sin esa variable, la app publicada usa los documentos de ejemplo.
+
+Como `API_BASE_URL` se lee al compilar, cambiarla no alcanza: hay que volver a desplegar (Actions → "Deploy a GitHub Pages" → Run workflow).
